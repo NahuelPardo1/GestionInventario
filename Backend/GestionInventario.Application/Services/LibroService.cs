@@ -32,7 +32,8 @@ public class LibroService : ILibroService
             Autor = dto.Autor,
             Precio = dto.Precio,
             FechaPublicacion = dto.FechaPublicacion,
-            ImagenURL = dto.ImagenURL
+            ImagenURL = dto.ImagenURL,
+            CategoriaId = dto.CategoriaId
         };
 
         await _repository.AddAsync(libro);

@@ -7,5 +7,6 @@ public class LibroCreateDto
     public decimal Precio { get; set; }
     public DateTime? FechaPublicacion { get; set; }
     public string? ImagenURL { get; set; }
+    public int CategoriaId { get; set; }
 
 }
