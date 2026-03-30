@@ -26,31 +26,30 @@ public class LibrosController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<Libro>> Get(int id)
     {
+        // El Middleware manejará el 404 si el servicio lanza NotFoundException
         var libro = await _libroService.GetByIdAsync(id);
-        if (libro == null) return NotFound();
         return Ok(libro);
     }
 
     [HttpPost]
-    public async Task<ActionResult<Libro>> Post(LibroCreateDto dto)
+    public async Task<ActionResult<Libro>> Post(LibroCreateDto libroDto)
     {
-        var libro = await _libroService.CreateAsync(dto);
-        return CreatedAtAction(nameof(Get), new { id = libro.Id }, libro);
+        // El Middleware manejará el 400 si el servicio lanza ValidationException
+        var nuevoLibro = await _libroService.CreateAsync(libroDto);
+        return CreatedAtAction(nameof(Get), new { id = nuevoLibro.Id }, nuevoLibro);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Put(int id, LibroCreateDto dto)
+    public async Task<IActionResult> Put(int id, LibroCreateDto libroDto)
     {
-        var result = await _libroService.UpdateAsync(id, dto);
-        if (!result) return NotFound();
+        await _libroService.UpdateAsync(id, libroDto);
         return NoContent();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var result = await _libroService.DeleteAsync(id);
-        if (!result) return NotFound();
+        await _libroService.DeleteAsync(id);
         return NoContent();
     }
 }

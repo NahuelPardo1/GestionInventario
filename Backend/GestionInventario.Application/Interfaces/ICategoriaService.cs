@@ -6,8 +6,8 @@ namespace GestionInventario.Application.Interfaces;
 public interface ICategoriaService
 {
     Task<IEnumerable<Categoria>> GetAllAsync();
-    Task<Categoria?> GetByIdAsync(int id);
+    Task<Categoria> GetByIdAsync(int id);
     Task<Categoria> CreateAsync(CategoriaCreateDto dto);
-    Task<bool> UpdateAsync(int id, CategoriaCreateDto dto);
-    Task<bool> DeleteAsync(int id);
+    Task UpdateAsync(int id, CategoriaCreateDto dto);
+    Task DeleteAsync(int id);
 }

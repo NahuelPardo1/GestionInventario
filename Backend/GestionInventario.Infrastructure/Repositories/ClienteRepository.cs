@@ -19,6 +19,12 @@ public class ClienteRepository : IClienteRepository
     public async Task<Cliente?> GetByIdAsync(int id) =>
         await _context.Clientes.FindAsync(id);
 
+    public async Task<bool> ExistsWithEmailAsync(string email, int? excludeId = null)
+    {
+        return await _context.Clientes
+            .AnyAsync(c => c.Email == email && (!excludeId.HasValue || c.Id != excludeId.Value));
+    }
+
     public async Task AddAsync(Cliente cliente)
     {
         await _context.Clientes.AddAsync(cliente);

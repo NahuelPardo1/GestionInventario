@@ -1,5 +1,7 @@
+using FluentValidation;
 using GestionInventario.Domain.Entities;
 using GestionInventario.Domain.Interfaces;
+using GestionInventario.Domain.Exceptions;
 using GestionInventario.Application.Interfaces;
 using GestionInventario.Application.DTOs;
 
@@ -8,20 +10,27 @@ namespace GestionInventario.Application.Services;
 public class VentaService : IVentaService
 {
     private readonly IVentaRepository _repository;
+    private readonly IValidator<VentaCreateDto> _validator;
 
-    public VentaService(IVentaRepository repository)
+    public VentaService(IVentaRepository repository, IValidator<VentaCreateDto> validator)
     {
         _repository = repository;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<Venta>> GetAllAsync() =>
         await _repository.GetAllAsync();
 
-    public async Task<Venta?> GetByIdAsync(int id) =>
-        await _repository.GetByIdAsync(id);
+    public async Task<Venta> GetByIdAsync(int id)
+    {
+        var venta = await _repository.GetByIdAsync(id);
+        if (venta == null) throw new NotFoundException($"La venta con ID {id} no fue encontrada.");
+        return venta;
+    }
 
     public async Task<Venta> CreateAsync(VentaCreateDto dto)
     {
+        await ValidarAsync(dto);
         var venta = new Venta
         {
             LibroId = dto.LibroId,
@@ -34,26 +43,35 @@ public class VentaService : IVentaService
         return venta;
     }
 
-    public async Task<bool> UpdateAsync(int id, VentaCreateDto dto)
+    public async Task UpdateAsync(int id, VentaCreateDto dto)
     {
+        await ValidarAsync(dto);
         var venta = await _repository.GetByIdAsync(id);
-        if (venta == null) return false;
-
+        if (venta == null) throw new NotFoundException($"La venta con ID {id} no fue encontrada.");
         venta.LibroId = dto.LibroId;
         venta.ClienteId = dto.ClienteId;
         venta.FechaVenta = dto.FechaVenta;
         venta.Cantidad = dto.Cantidad;
         venta.Total = dto.Total;
-
         await _repository.UpdateAsync(venta);
-        return true;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task DeleteAsync(int id)
     {
         var venta = await _repository.GetByIdAsync(id);
-        if (venta == null) return false;
+        if (venta == null) throw new NotFoundException($"La venta con ID {id} no fue encontrada.");
         await _repository.DeleteAsync(id);
-        return true;
+    }
+
+    private async Task ValidarAsync(VentaCreateDto dto)
+    {
+        var result = await _validator.ValidateAsync(dto);
+        if (!result.IsValid)
+        {
+            var errors = result.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.ErrorMessage).ToArray());
+            throw new GestionInventario.Domain.Exceptions.ValidationException(errors);
+        }
     }
 }

@@ -6,8 +6,8 @@ namespace GestionInventario.Application.Interfaces;
 public interface IClienteService
 {
     Task<IEnumerable<Cliente>> GetAllAsync();
-    Task<Cliente?> GetByIdAsync(int id);
+    Task<Cliente> GetByIdAsync(int id);
     Task<Cliente> CreateAsync(ClienteCreateDto dto);
-    Task<bool> UpdateAsync(int id, ClienteCreateDto dto);
-    Task<bool> DeleteAsync(int id);
+    Task UpdateAsync(int id, ClienteCreateDto dto);
+    Task DeleteAsync(int id);
 }

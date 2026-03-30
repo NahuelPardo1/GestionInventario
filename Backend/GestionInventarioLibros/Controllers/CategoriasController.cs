@@ -9,48 +9,35 @@ namespace GestionInventarioLibros.Controllers;
 [Route("api/[controller]")]
 public class CategoriasController : ControllerBase
 {
-    private readonly ICategoriaService _categoriaService;
-
-    public CategoriasController(ICategoriaService categoriaService)
-    {
-        _categoriaService = categoriaService;
-    }
+    private readonly ICategoriaService _service;
+    public CategoriasController(ICategoriaService service) => _service = service;
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Categoria>>> Get()
-    {
-        var categorias = await _categoriaService.GetAllAsync();
-        return Ok(categorias);
-    }
+        => Ok(await _service.GetAllAsync());
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Categoria>> Get(int id)
-    {
-        var categoria = await _categoriaService.GetByIdAsync(id);
-        if (categoria == null) return NotFound();
-        return Ok(categoria);
-    }
+        => Ok(await _service.GetByIdAsync(id));
 
     [HttpPost]
     public async Task<ActionResult<Categoria>> Post(CategoriaCreateDto dto)
     {
-        var categoria = await _categoriaService.CreateAsync(dto);
+        var categoria = await _service.CreateAsync(dto);
         return CreatedAtAction(nameof(Get), new { id = categoria.Id }, categoria);
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> Put(int id, CategoriaCreateDto dto)
     {
-        var result = await _categoriaService.UpdateAsync(id, dto);
-        if (!result) return NotFound();
+        await _service.UpdateAsync(id, dto);
         return NoContent();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var result = await _categoriaService.DeleteAsync(id);
-        if (!result) return NotFound();
+        await _service.DeleteAsync(id);
         return NoContent();
     }
 }

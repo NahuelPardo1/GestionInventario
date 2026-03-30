@@ -10,7 +10,6 @@ namespace GestionInventarioLibros.Controllers;
 public class ClientesController : ControllerBase
 {
     private readonly IClienteService _service;
-
     public ClientesController(IClienteService service) => _service = service;
 
     [HttpGet]
@@ -19,11 +18,7 @@ public class ClientesController : ControllerBase
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Cliente>> Get(int id)
-    {
-        var cliente = await _service.GetByIdAsync(id);
-        if (cliente == null) return NotFound();
-        return Ok(cliente);
-    }
+        => Ok(await _service.GetByIdAsync(id));
 
     [HttpPost]
     public async Task<ActionResult<Cliente>> Post(ClienteCreateDto dto)
@@ -35,14 +30,14 @@ public class ClientesController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Put(int id, ClienteCreateDto dto)
     {
-        if (!await _service.UpdateAsync(id, dto)) return NotFound();
+        await _service.UpdateAsync(id, dto);
         return NoContent();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        if (!await _service.DeleteAsync(id)) return NotFound();
+        await _service.DeleteAsync(id);
         return NoContent();
     }
 }

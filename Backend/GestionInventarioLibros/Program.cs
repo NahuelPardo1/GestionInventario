@@ -1,15 +1,23 @@
 using Microsoft.EntityFrameworkCore;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using GestionInventario.Infrastructure;
 using GestionInventario.Infrastructure.Repositories;
 using GestionInventario.Domain.Interfaces;
 using GestionInventario.Application.Interfaces;
 using GestionInventario.Application.Services;
+using GestionInventario.Application.Validators;
+using GestionInventarioLibros.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Agregar la conexión a la base de datos
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Configurar FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<LibroCreateDtoValidator>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -32,6 +40,9 @@ builder.Services.AddScoped<IPrestamoRepository, PrestamoRepository>();
 builder.Services.AddScoped<IPrestamoService, PrestamoService>();
 
 var app = builder.Build();
+
+// Registrar el Middleware de Excepciones Globales
+app.UseMiddleware<ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

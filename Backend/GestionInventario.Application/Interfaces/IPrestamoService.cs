@@ -6,8 +6,8 @@ namespace GestionInventario.Application.Interfaces;
 public interface IPrestamoService
 {
     Task<IEnumerable<Prestamo>> GetAllAsync();
-    Task<Prestamo?> GetByIdAsync(int id);
+    Task<Prestamo> GetByIdAsync(int id);
     Task<Prestamo> CreateAsync(PrestamoCreateDto dto);
-    Task<bool> UpdateAsync(int id, PrestamoCreateDto dto);
-    Task<bool> DeleteAsync(int id);
+    Task UpdateAsync(int id, PrestamoCreateDto dto);
+    Task DeleteAsync(int id);
 }

@@ -1,5 +1,7 @@
+using FluentValidation;
 using GestionInventario.Domain.Entities;
 using GestionInventario.Domain.Interfaces;
+using GestionInventario.Domain.Exceptions;
 using GestionInventario.Application.Interfaces;
 using GestionInventario.Application.DTOs;
 
@@ -8,20 +10,27 @@ namespace GestionInventario.Application.Services;
 public class AutorService : IAutorService
 {
     private readonly IAutorRepository _repository;
+    private readonly IValidator<AutorCreateDto> _validator;
 
-    public AutorService(IAutorRepository repository)
+    public AutorService(IAutorRepository repository, IValidator<AutorCreateDto> validator)
     {
         _repository = repository;
+        _validator = validator;
     }
 
     public async Task<IEnumerable<Autor>> GetAllAsync() =>
         await _repository.GetAllAsync();
 
-    public async Task<Autor?> GetByIdAsync(int id) =>
-        await _repository.GetByIdAsync(id);
+    public async Task<Autor> GetByIdAsync(int id)
+    {
+        var autor = await _repository.GetByIdAsync(id);
+        if (autor == null) throw new NotFoundException($"El autor con ID {id} no fue encontrado.");
+        return autor;
+    }
 
     public async Task<Autor> CreateAsync(AutorCreateDto dto)
     {
+        await ValidarAsync(dto);
         var autor = new Autor
         {
             Nombre = dto.Nombre,
@@ -33,25 +42,34 @@ public class AutorService : IAutorService
         return autor;
     }
 
-    public async Task<bool> UpdateAsync(int id, AutorCreateDto dto)
+    public async Task UpdateAsync(int id, AutorCreateDto dto)
     {
+        await ValidarAsync(dto);
         var autor = await _repository.GetByIdAsync(id);
-        if (autor == null) return false;
-
+        if (autor == null) throw new NotFoundException($"El autor con ID {id} no fue encontrado.");
         autor.Nombre = dto.Nombre;
         autor.Nacionalidad = dto.Nacionalidad;
         autor.FechaNacimiento = dto.FechaNacimiento;
         autor.Biografia = dto.Biografia;
-
         await _repository.UpdateAsync(autor);
-        return true;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task DeleteAsync(int id)
     {
         var autor = await _repository.GetByIdAsync(id);
-        if (autor == null) return false;
+        if (autor == null) throw new NotFoundException($"El autor con ID {id} no fue encontrado.");
         await _repository.DeleteAsync(id);
-        return true;
+    }
+
+    private async Task ValidarAsync(AutorCreateDto dto)
+    {
+        var result = await _validator.ValidateAsync(dto);
+        if (!result.IsValid)
+        {
+            var errors = result.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(g => g.Key, g => g.Select(x => x.ErrorMessage).ToArray());
+            throw new GestionInventario.Domain.Exceptions.ValidationException(errors);
+        }
     }
 }

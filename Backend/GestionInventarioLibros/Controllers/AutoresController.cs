@@ -10,7 +10,6 @@ namespace GestionInventarioLibros.Controllers;
 public class AutoresController : ControllerBase
 {
     private readonly IAutorService _service;
-
     public AutoresController(IAutorService service) => _service = service;
 
     [HttpGet]
@@ -19,11 +18,7 @@ public class AutoresController : ControllerBase
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Autor>> Get(int id)
-    {
-        var autor = await _service.GetByIdAsync(id);
-        if (autor == null) return NotFound();
-        return Ok(autor);
-    }
+        => Ok(await _service.GetByIdAsync(id));
 
     [HttpPost]
     public async Task<ActionResult<Autor>> Post(AutorCreateDto dto)
@@ -35,14 +30,14 @@ public class AutoresController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Put(int id, AutorCreateDto dto)
     {
-        if (!await _service.UpdateAsync(id, dto)) return NotFound();
+        await _service.UpdateAsync(id, dto);
         return NoContent();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        if (!await _service.DeleteAsync(id)) return NotFound();
+        await _service.DeleteAsync(id);
         return NoContent();
     }
 }
