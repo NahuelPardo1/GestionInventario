@@ -14,28 +14,23 @@ public class LibroService : ILibroService
         _repository = repository;
     }
 
-    public async Task<IEnumerable<Libro>> GetAllAsync()
-    {
-        return await _repository.GetAllAsync();
-    }
+    public async Task<IEnumerable<Libro>> GetAllAsync() =>
+        await _repository.GetAllAsync();
 
-    public async Task<Libro?> GetByIdAsync(int id)
-    {
-        return await _repository.GetByIdAsync(id);
-    }
+    public async Task<Libro?> GetByIdAsync(int id) =>
+        await _repository.GetByIdAsync(id);
 
     public async Task<Libro> CreateAsync(LibroCreateDto dto)
     {
         var libro = new Libro
         {
             Titulo = dto.Titulo,
-            Autor = dto.Autor,
+            AutorId = dto.AutorId,
             Precio = dto.Precio,
             FechaPublicacion = dto.FechaPublicacion,
             ImagenURL = dto.ImagenURL,
-            CategoriaId = dto.CategoriaId
+            CategoriaId = dto.CategoriaId ?? 0
         };
-
         await _repository.AddAsync(libro);
         return libro;
     }
@@ -46,10 +41,11 @@ public class LibroService : ILibroService
         if (libroExistente == null) return false;
 
         libroExistente.Titulo = dto.Titulo;
-        libroExistente.Autor = dto.Autor;
+        libroExistente.AutorId = dto.AutorId;
         libroExistente.Precio = dto.Precio;
         libroExistente.FechaPublicacion = dto.FechaPublicacion;
         libroExistente.ImagenURL = dto.ImagenURL;
+        libroExistente.CategoriaId = dto.CategoriaId ?? 0;
 
         await _repository.UpdateAsync(libroExistente);
         return true;
@@ -59,7 +55,6 @@ public class LibroService : ILibroService
     {
         var libroExistente = await _repository.GetByIdAsync(id);
         if (libroExistente == null) return false;
-
         await _repository.DeleteAsync(id);
         return true;
     }
