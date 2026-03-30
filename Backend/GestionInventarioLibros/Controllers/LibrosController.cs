@@ -23,6 +23,16 @@ public class LibrosController : ControllerBase
         return Ok(libros);
     }
 
+    [HttpGet("buscar")]
+    public async Task<ActionResult<IEnumerable<Libro>>> Buscar(
+        [FromQuery] string? titulo,
+        [FromQuery] int? autorId,
+        [FromQuery] int? categoriaId)
+    {
+        var libros = await _libroService.SearchAsync(titulo, autorId, categoriaId);
+        return Ok(libros);
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<Libro>> Get(int id)
     {

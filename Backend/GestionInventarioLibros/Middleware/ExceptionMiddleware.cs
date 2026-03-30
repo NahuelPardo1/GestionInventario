@@ -8,11 +8,13 @@ public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
+    private readonly IHostEnvironment _env;
 
-    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IHostEnvironment env)
     {
         _next = next;
         _logger = logger;
+        _env = env;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -28,7 +30,7 @@ public class ExceptionMiddleware
         }
     }
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/json";
         var response = new ErrorResponse();
@@ -48,7 +50,16 @@ public class ExceptionMiddleware
 
             default:
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                response.Message = "Ha ocurrido un error interno en el servidor.";
+                // En desarrollo, mostrar el detalle completo del error para facilitar el debug
+                if (_env.IsDevelopment())
+                {
+                    response.Message = exception.Message;
+                    response.Detail = exception.InnerException?.Message ?? exception.StackTrace;
+                }
+                else
+                {
+                    response.Message = "Ha ocurrido un error interno en el servidor.";
+                }
                 break;
         }
 
@@ -61,4 +72,5 @@ public class ErrorResponse
 {
     public string Message { get; set; } = string.Empty;
     public IDictionary<string, string[]>? Errors { get; set; }
+    public string? Detail { get; set; }
 }

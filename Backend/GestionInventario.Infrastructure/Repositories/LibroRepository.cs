@@ -13,14 +13,35 @@ public class LibroRepository : ILibroRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Libro>> GetAllAsync()
-    {
-        return await _context.Libros.ToListAsync();
-    }
+    public async Task<IEnumerable<Libro>> GetAllAsync() =>
+        await _context.Libros
+            .Include(l => l.Autor)
+            .Include(l => l.Categoria)
+            .ToListAsync();
 
-    public async Task<Libro?> GetByIdAsync(int id)
+    public async Task<Libro?> GetByIdAsync(int id) =>
+        await _context.Libros
+            .Include(l => l.Autor)
+            .Include(l => l.Categoria)
+            .FirstOrDefaultAsync(l => l.Id == id);
+
+    public async Task<IEnumerable<Libro>> SearchAsync(string? titulo, int? autorId, int? categoriaId)
     {
-        return await _context.Libros.FindAsync(id);
+        var query = _context.Libros
+            .Include(l => l.Autor)
+            .Include(l => l.Categoria)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(titulo))
+            query = query.Where(l => l.Titulo.Contains(titulo));
+
+        if (autorId.HasValue)
+            query = query.Where(l => l.AutorId == autorId.Value);
+
+        if (categoriaId.HasValue)
+            query = query.Where(l => l.CategoriaId == categoriaId.Value);
+
+        return await query.ToListAsync();
     }
 
     public async Task AddAsync(Libro libro)

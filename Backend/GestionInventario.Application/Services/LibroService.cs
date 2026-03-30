@@ -28,6 +28,9 @@ public class LibroService : ILibroService
         return libro;
     }
 
+    public async Task<IEnumerable<Libro>> SearchAsync(string? titulo, int? autorId, int? categoriaId) =>
+        await _repository.SearchAsync(titulo, autorId, categoriaId);
+
     public async Task<Libro> CreateAsync(LibroCreateDto dto)
     {
         var validationResult = await _validator.ValidateAsync(dto);
