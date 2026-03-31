@@ -10,4 +10,5 @@ public interface IPrestamoService
     Task<Prestamo> CreateAsync(PrestamoCreateDto dto);
     Task UpdateAsync(int id, PrestamoCreateDto dto);
     Task DeleteAsync(int id);
+    Task DevolverAsync(int id);
 }

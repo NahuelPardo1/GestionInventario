@@ -34,6 +34,13 @@ public class PrestamosController : ControllerBase
         return NoContent();
     }
 
+    [HttpPut("{id}/devolver")]
+    public async Task<IActionResult> Devolver(int id)
+    {
+        await _service.DevolverAsync(id);
+        return Ok(new { Message = "El libro ha sido devuelto correctamente al stock." });
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

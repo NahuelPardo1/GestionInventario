@@ -25,6 +25,10 @@ public class PrestamoRepository : IPrestamoRepository
             .Include(p => p.Cliente)
             .FirstOrDefaultAsync(p => p.Id == id);
 
+    public async Task<bool> HasActiveLoanAsync(int clienteId, int libroId) =>
+        await _context.Prestamos
+            .AnyAsync(p => p.ClienteId == clienteId && p.LibroId == libroId && p.FechaDevolucion == null);
+
     public async Task AddAsync(Prestamo prestamo)
     {
         await _context.Prestamos.AddAsync(prestamo);

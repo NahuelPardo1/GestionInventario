@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using GestionInventario.Domain.Entities;
 using GestionInventario.Domain.Interfaces;
+using GestionInventario.Domain.Enums;
 
 namespace GestionInventario.Infrastructure.Repositories;
 
@@ -25,6 +26,15 @@ public class StockRepository : IStockRepository
         await _context.Stocks
             .Where(s => s.LibroId == libroId)
             .ToListAsync();
+
+    public async Task<int> GetStockActualAsync(int libroId)
+    {
+        var movimientos = await _context.Stocks
+            .Where(s => s.LibroId == libroId)
+            .ToListAsync();
+
+        return movimientos.Sum(s => s.Tipo == Tipo.Entrada ? s.Cantidad : -s.Cantidad);
+    }
 
     public async Task AddAsync(Stock stock)
     {

@@ -31,6 +31,9 @@ public class StockService : IStockService
     public async Task<IEnumerable<Stock>> GetByLibroIdAsync(int libroId) =>
         await _repository.GetByLibroIdAsync(libroId);
 
+    public async Task<int> GetStockActualAsync(int libroId) =>
+        await _repository.GetStockActualAsync(libroId);
+
     public async Task<Stock> CreateAsync(StockCreateDto dto)
     {
         await ValidarAsync(dto);
