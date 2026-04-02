@@ -13,8 +13,12 @@ public class ClienteRepository : IClienteRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Cliente>> GetAllAsync() =>
-        await _context.Clientes.ToListAsync();
+    public async Task<(IEnumerable<Cliente> Items, int TotalCount)> GetAllAsync(int skip, int take)
+    {
+        var total = await _context.Clientes.CountAsync();
+        var items = await _context.Clientes.Skip(skip).Take(take).ToListAsync();
+        return (items, total);
+    }
 
     public async Task<Cliente?> GetByIdAsync(int id) =>
         await _context.Clientes.FindAsync(id);

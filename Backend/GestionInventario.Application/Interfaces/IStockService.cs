@@ -5,11 +5,11 @@ namespace GestionInventario.Application.Interfaces;
 
 public interface IStockService
 {
-    Task<IEnumerable<Stock>> GetAllAsync();
-    Task<Stock> GetByIdAsync(int id);
-    Task<IEnumerable<Stock>> GetByLibroIdAsync(int libroId);
+    Task<PagedResult<StockDto>> GetAllAsync(int pageNumber = 1, int pageSize = 10);
+    Task<StockDto> GetByIdAsync(int id);
+    Task<PagedResult<StockDto>> GetByLibroIdAsync(int libroId, int pageNumber = 1, int pageSize = 10);
     Task<int> GetStockActualAsync(int libroId);
-    Task<Stock> CreateAsync(StockCreateDto dto);
+    Task<StockDto> CreateAsync(StockCreateDto dto);
     Task UpdateAsync(int id, StockCreateDto dto);
     Task DeleteAsync(int id);
 }

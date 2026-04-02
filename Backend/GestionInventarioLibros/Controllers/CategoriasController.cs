@@ -13,15 +13,15 @@ public class CategoriasController : ControllerBase
     public CategoriasController(ICategoriaService service) => _service = service;
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Categoria>>> Get()
+    public async Task<ActionResult<IEnumerable<CategoriaDto>>> Get()
         => Ok(await _service.GetAllAsync());
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Categoria>> Get(int id)
+    public async Task<ActionResult<CategoriaDto>> Get(int id)
         => Ok(await _service.GetByIdAsync(id));
 
     [HttpPost]
-    public async Task<ActionResult<Categoria>> Post(CategoriaCreateDto dto)
+    public async Task<ActionResult<CategoriaDto>> Post(CategoriaCreateDto dto)
     {
         var categoria = await _service.CreateAsync(dto);
         return CreatedAtAction(nameof(Get), new { id = categoria.Id }, categoria);

@@ -4,6 +4,7 @@ using GestionInventario.Domain.Interfaces;
 using GestionInventario.Domain.Exceptions;
 using GestionInventario.Application.Interfaces;
 using GestionInventario.Application.DTOs;
+using AutoMapper;
 
 namespace GestionInventario.Application.Services;
 
@@ -11,27 +12,49 @@ public class LibroService : ILibroService
 {
     private readonly ILibroRepository _repository;
     private readonly IValidator<LibroCreateDto> _validator;
+    private readonly IMapper _mapper;
 
-    public LibroService(ILibroRepository repository, IValidator<LibroCreateDto> validator)
+    public LibroService(ILibroRepository repository, IValidator<LibroCreateDto> validator, IMapper mapper)
     {
         _repository = repository;
         _validator = validator;
+        _mapper = mapper;
     }
 
-    public async Task<IEnumerable<Libro>> GetAllAsync() =>
-        await _repository.GetAllAsync();
+    public async Task<PagedResult<LibroDto>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+    {
+        int skip = (pageNumber - 1) * pageSize;
+        var (items, totalCount) = await _repository.GetAllAsync(skip, pageSize);
+        return new PagedResult<LibroDto>
+        {
+            Items = _mapper.Map<IEnumerable<LibroDto>>(items),
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
 
-    public async Task<Libro> GetByIdAsync(int id)
+    public async Task<LibroDto> GetByIdAsync(int id)
     {
         var libro = await _repository.GetByIdAsync(id);
         if (libro == null) throw new NotFoundException($"El libro con ID {id} no fue encontrado.");
-        return libro;
+        return _mapper.Map<LibroDto>(libro);
     }
 
-    public async Task<IEnumerable<Libro>> SearchAsync(string? titulo, int? autorId, int? categoriaId) =>
-        await _repository.SearchAsync(titulo, autorId, categoriaId);
+    public async Task<PagedResult<LibroDto>> SearchAsync(string? titulo, int? autorId, int? categoriaId, int pageNumber = 1, int pageSize = 10)
+    {
+        int skip = (pageNumber - 1) * pageSize;
+        var (items, totalCount) = await _repository.SearchAsync(titulo, autorId, categoriaId, skip, pageSize);
+        return new PagedResult<LibroDto>
+        {
+            Items = _mapper.Map<IEnumerable<LibroDto>>(items),
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
 
-    public async Task<Libro> CreateAsync(LibroCreateDto dto)
+    public async Task<LibroDto> CreateAsync(LibroCreateDto dto)
     {
         var validationResult = await _validator.ValidateAsync(dto);
         if (!validationResult.IsValid)
@@ -52,7 +75,7 @@ public class LibroService : ILibroService
             CategoriaId = dto.CategoriaId ?? 0
         };
         await _repository.AddAsync(libro);
-        return libro;
+        return _mapper.Map<LibroDto>(libro);
     }
 
     public async Task UpdateAsync(int id, LibroCreateDto dto)

@@ -14,18 +14,28 @@ public class StockRepository : IStockRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Stock>> GetAllAsync() =>
-        await _context.Stocks
-            .Include(s => s.Libro)
-            .ToListAsync();
+    public async Task<(IEnumerable<Stock> Items, int TotalCount)> GetAllAsync(int skip, int take)
+    {
+        var query = _context.Stocks
+            .Include(s => s.Libro);
+
+        var total = await query.CountAsync();
+        var items = await query.Skip(skip).Take(take).ToListAsync();
+        return (items, total);
+    }
 
     public async Task<Stock?> GetByIdAsync(int id) =>
         await _context.Stocks.FindAsync(id);
 
-    public async Task<IEnumerable<Stock>> GetByLibroIdAsync(int libroId) =>
-        await _context.Stocks
-            .Where(s => s.LibroId == libroId)
-            .ToListAsync();
+    public async Task<(IEnumerable<Stock> Items, int TotalCount)> GetByLibroIdAsync(int libroId, int skip, int take)
+    {
+        var query = _context.Stocks
+            .Where(s => s.LibroId == libroId);
+
+        var total = await query.CountAsync();
+        var items = await query.Skip(skip).Take(take).ToListAsync();
+        return (items, total);
+    }
 
     public async Task<int> GetStockActualAsync(int libroId)
     {

@@ -13,19 +13,19 @@ public class StocksController : ControllerBase
     public StocksController(IStockService service) => _service = service;
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Stock>>> Get()
-        => Ok(await _service.GetAllAsync());
+    public async Task<ActionResult<PagedResult<StockDto>>> Get([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        => Ok(await _service.GetAllAsync(pageNumber, pageSize));
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Stock>> Get(int id)
+    public async Task<ActionResult<StockDto>> Get(int id)
         => Ok(await _service.GetByIdAsync(id));
 
     [HttpGet("libro/{libroId}")]
-    public async Task<ActionResult<IEnumerable<Stock>>> GetByLibro(int libroId)
-        => Ok(await _service.GetByLibroIdAsync(libroId));
+    public async Task<ActionResult<PagedResult<StockDto>>> GetByLibro(int libroId, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        => Ok(await _service.GetByLibroIdAsync(libroId, pageNumber, pageSize));
 
     [HttpPost]
-    public async Task<ActionResult<Stock>> Post(StockCreateDto dto)
+    public async Task<ActionResult<StockDto>> Post(StockCreateDto dto)
     {
         var stock = await _service.CreateAsync(dto);
         return CreatedAtAction(nameof(Get), new { id = stock.Id }, stock);

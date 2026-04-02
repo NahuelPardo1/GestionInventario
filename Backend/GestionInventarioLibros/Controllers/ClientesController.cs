@@ -13,15 +13,15 @@ public class ClientesController : ControllerBase
     public ClientesController(IClienteService service) => _service = service;
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Cliente>>> Get()
-        => Ok(await _service.GetAllAsync());
+    public async Task<ActionResult<PagedResult<ClienteDto>>> Get([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        => Ok(await _service.GetAllAsync(pageNumber, pageSize));
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Cliente>> Get(int id)
+    public async Task<ActionResult<ClienteDto>> Get(int id)
         => Ok(await _service.GetByIdAsync(id));
 
     [HttpPost]
-    public async Task<ActionResult<Cliente>> Post(ClienteCreateDto dto)
+    public async Task<ActionResult<ClienteDto>> Post(ClienteCreateDto dto)
     {
         var cliente = await _service.CreateAsync(dto);
         return CreatedAtAction(nameof(Get), new { id = cliente.Id }, cliente);

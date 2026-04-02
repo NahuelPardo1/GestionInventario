@@ -4,6 +4,7 @@ using GestionInventario.Domain.Interfaces;
 using GestionInventario.Domain.Exceptions;
 using GestionInventario.Application.Interfaces;
 using GestionInventario.Application.DTOs;
+using AutoMapper;
 
 namespace GestionInventario.Application.Services;
 
@@ -11,24 +12,29 @@ public class AutorService : IAutorService
 {
     private readonly IAutorRepository _repository;
     private readonly IValidator<AutorCreateDto> _validator;
+    private readonly IMapper _mapper;
 
-    public AutorService(IAutorRepository repository, IValidator<AutorCreateDto> validator)
+    public AutorService(IAutorRepository repository, IValidator<AutorCreateDto> validator, IMapper mapper)
     {
         _repository = repository;
         _validator = validator;
+        _mapper = mapper;
     }
 
-    public async Task<IEnumerable<Autor>> GetAllAsync() =>
-        await _repository.GetAllAsync();
+    public async Task<IEnumerable<AutorDto>> GetAllAsync()
+    {
+        var autores = await _repository.GetAllAsync();
+        return _mapper.Map<IEnumerable<AutorDto>>(autores);
+    }
 
-    public async Task<Autor> GetByIdAsync(int id)
+    public async Task<AutorDto> GetByIdAsync(int id)
     {
         var autor = await _repository.GetByIdAsync(id);
         if (autor == null) throw new NotFoundException($"El autor con ID {id} no fue encontrado.");
-        return autor;
+        return _mapper.Map<AutorDto>(autor);
     }
 
-    public async Task<Autor> CreateAsync(AutorCreateDto dto)
+    public async Task<AutorDto> CreateAsync(AutorCreateDto dto)
     {
         await ValidarAsync(dto);
         var autor = new Autor
@@ -39,7 +45,7 @@ public class AutorService : IAutorService
             Biografia = dto.Biografia
         };
         await _repository.AddAsync(autor);
-        return autor;
+        return _mapper.Map<AutorDto>(autor);
     }
 
     public async Task UpdateAsync(int id, AutorCreateDto dto)

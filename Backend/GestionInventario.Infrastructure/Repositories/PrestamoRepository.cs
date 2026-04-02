@@ -13,11 +13,16 @@ public class PrestamoRepository : IPrestamoRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Prestamo>> GetAllAsync() =>
-        await _context.Prestamos
+    public async Task<(IEnumerable<Prestamo> Items, int TotalCount)> GetAllAsync(int skip, int take)
+    {
+        var query = _context.Prestamos
             .Include(p => p.Libro)
-            .Include(p => p.Cliente)
-            .ToListAsync();
+            .Include(p => p.Cliente);
+
+        var total = await query.CountAsync();
+        var items = await query.Skip(skip).Take(take).ToListAsync();
+        return (items, total);
+    }
 
     public async Task<Prestamo?> GetByIdAsync(int id) =>
         await _context.Prestamos

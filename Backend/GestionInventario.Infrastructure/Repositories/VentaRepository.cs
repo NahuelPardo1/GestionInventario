@@ -13,11 +13,16 @@ public class VentaRepository : IVentaRepository
         _context = context;
     }
 
-    public async Task<IEnumerable<Venta>> GetAllAsync() =>
-        await _context.Ventas
+    public async Task<(IEnumerable<Venta> Items, int TotalCount)> GetAllAsync(int skip, int take)
+    {
+        var query = _context.Ventas
             .Include(v => v.Libro)
-            .Include(v => v.Cliente)
-            .ToListAsync();
+            .Include(v => v.Cliente);
+
+        var total = await query.CountAsync();
+        var items = await query.Skip(skip).Take(take).ToListAsync();
+        return (items, total);
+    }
 
     public async Task<Venta?> GetByIdAsync(int id) =>
         await _context.Ventas

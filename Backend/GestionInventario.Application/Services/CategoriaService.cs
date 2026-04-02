@@ -4,6 +4,7 @@ using GestionInventario.Domain.Interfaces;
 using GestionInventario.Domain.Exceptions;
 using GestionInventario.Application.Interfaces;
 using GestionInventario.Application.DTOs;
+using AutoMapper;
 
 namespace GestionInventario.Application.Services;
 
@@ -11,29 +12,34 @@ public class CategoriaService : ICategoriaService
 {
     private readonly ICategoriaRepository _repository;
     private readonly IValidator<CategoriaCreateDto> _validator;
+    private readonly IMapper _mapper;
 
-    public CategoriaService(ICategoriaRepository repository, IValidator<CategoriaCreateDto> validator)
+    public CategoriaService(ICategoriaRepository repository, IValidator<CategoriaCreateDto> validator, IMapper mapper)
     {
         _repository = repository;
         _validator = validator;
+        _mapper = mapper;
     }
 
-    public async Task<IEnumerable<Categoria>> GetAllAsync() =>
-        await _repository.GetAllAsync();
+    public async Task<IEnumerable<CategoriaDto>> GetAllAsync()
+    {
+        var categorias = await _repository.GetAllAsync();
+        return _mapper.Map<IEnumerable<CategoriaDto>>(categorias);
+    }
 
-    public async Task<Categoria> GetByIdAsync(int id)
+    public async Task<CategoriaDto> GetByIdAsync(int id)
     {
         var categoria = await _repository.GetByIdAsync(id);
         if (categoria == null) throw new NotFoundException($"La categoría con ID {id} no fue encontrada.");
-        return categoria;
+        return _mapper.Map<CategoriaDto>(categoria);
     }
 
-    public async Task<Categoria> CreateAsync(CategoriaCreateDto dto)
+    public async Task<CategoriaDto> CreateAsync(CategoriaCreateDto dto)
     {
         await ValidarAsync(dto);
         var categoria = new Categoria { Nombre = dto.Nombre };
         await _repository.AddAsync(categoria);
-        return categoria;
+        return _mapper.Map<CategoriaDto>(categoria);
     }
 
     public async Task UpdateAsync(int id, CategoriaCreateDto dto)

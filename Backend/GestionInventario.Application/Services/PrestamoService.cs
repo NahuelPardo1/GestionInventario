@@ -5,6 +5,7 @@ using GestionInventario.Domain.Exceptions;
 using GestionInventario.Domain.Enums;
 using GestionInventario.Application.Interfaces;
 using GestionInventario.Application.DTOs;
+using AutoMapper;
 
 namespace GestionInventario.Application.Services;
 
@@ -13,25 +14,37 @@ public class PrestamoService : IPrestamoService
     private readonly IPrestamoRepository _repository;
     private readonly IStockService _stockService;
     private readonly IValidator<PrestamoCreateDto> _validator;
+    private readonly IMapper _mapper;
 
-    public PrestamoService(IPrestamoRepository repository, IStockService stockService, IValidator<PrestamoCreateDto> validator)
+    public PrestamoService(IPrestamoRepository repository, IStockService stockService, IValidator<PrestamoCreateDto> validator, IMapper mapper)
     {
         _repository = repository;
         _stockService = stockService;
         _validator = validator;
+        _mapper = mapper;
     }
 
-    public async Task<IEnumerable<Prestamo>> GetAllAsync() =>
-        await _repository.GetAllAsync();
+    public async Task<PagedResult<PrestamoDto>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+    {
+        int skip = (pageNumber - 1) * pageSize;
+        var (items, totalCount) = await _repository.GetAllAsync(skip, pageSize);
+        return new PagedResult<PrestamoDto>
+        {
+            Items = _mapper.Map<IEnumerable<PrestamoDto>>(items),
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
 
-    public async Task<Prestamo> GetByIdAsync(int id)
+    public async Task<PrestamoDto> GetByIdAsync(int id)
     {
         var prestamo = await _repository.GetByIdAsync(id);
         if (prestamo == null) throw new NotFoundException($"El préstamo con ID {id} no fue encontrado.");
-        return prestamo;
+        return _mapper.Map<PrestamoDto>(prestamo);
     }
 
-    public async Task<Prestamo> CreateAsync(PrestamoCreateDto dto)
+    public async Task<PrestamoDto> CreateAsync(PrestamoCreateDto dto)
     {
         await ValidarAsync(dto);
 
@@ -73,7 +86,7 @@ public class PrestamoService : IPrestamoService
             Fecha = DateTime.Now
         });
 
-        return prestamo;
+        return _mapper.Map<PrestamoDto>(prestamo);
     }
 
     public async Task UpdateAsync(int id, PrestamoCreateDto dto)

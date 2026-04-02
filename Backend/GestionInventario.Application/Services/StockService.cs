@@ -4,6 +4,7 @@ using GestionInventario.Domain.Interfaces;
 using GestionInventario.Domain.Exceptions;
 using GestionInventario.Application.Interfaces;
 using GestionInventario.Application.DTOs;
+using AutoMapper;
 
 namespace GestionInventario.Application.Services;
 
@@ -11,30 +12,52 @@ public class StockService : IStockService
 {
     private readonly IStockRepository _repository;
     private readonly IValidator<StockCreateDto> _validator;
+    private readonly IMapper _mapper;
 
-    public StockService(IStockRepository repository, IValidator<StockCreateDto> validator)
+    public StockService(IStockRepository repository, IValidator<StockCreateDto> validator, IMapper mapper)
     {
         _repository = repository;
         _validator = validator;
+        _mapper = mapper;
     }
 
-    public async Task<IEnumerable<Stock>> GetAllAsync() =>
-        await _repository.GetAllAsync();
+    public async Task<PagedResult<StockDto>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+    {
+        int skip = (pageNumber - 1) * pageSize;
+        var (items, totalCount) = await _repository.GetAllAsync(skip, pageSize);
+        return new PagedResult<StockDto>
+        {
+            Items = _mapper.Map<IEnumerable<StockDto>>(items),
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
 
-    public async Task<Stock> GetByIdAsync(int id)
+    public async Task<StockDto> GetByIdAsync(int id)
     {
         var stock = await _repository.GetByIdAsync(id);
         if (stock == null) throw new NotFoundException($"El movimiento de stock con ID {id} no fue encontrado.");
-        return stock;
+        return _mapper.Map<StockDto>(stock);
     }
 
-    public async Task<IEnumerable<Stock>> GetByLibroIdAsync(int libroId) =>
-        await _repository.GetByLibroIdAsync(libroId);
+    public async Task<PagedResult<StockDto>> GetByLibroIdAsync(int libroId, int pageNumber = 1, int pageSize = 10)
+    {
+        int skip = (pageNumber - 1) * pageSize;
+        var (items, totalCount) = await _repository.GetByLibroIdAsync(libroId, skip, pageSize);
+        return new PagedResult<StockDto>
+        {
+            Items = _mapper.Map<IEnumerable<StockDto>>(items),
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
 
     public async Task<int> GetStockActualAsync(int libroId) =>
         await _repository.GetStockActualAsync(libroId);
 
-    public async Task<Stock> CreateAsync(StockCreateDto dto)
+    public async Task<StockDto> CreateAsync(StockCreateDto dto)
     {
         await ValidarAsync(dto);
         var stock = new Stock
@@ -45,7 +68,7 @@ public class StockService : IStockService
             Fecha = dto.Fecha
         };
         await _repository.AddAsync(stock);
-        return stock;
+        return _mapper.Map<StockDto>(stock);
     }
 
     public async Task UpdateAsync(int id, StockCreateDto dto)

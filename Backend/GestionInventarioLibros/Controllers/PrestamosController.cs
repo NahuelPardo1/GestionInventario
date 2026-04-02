@@ -13,15 +13,15 @@ public class PrestamosController : ControllerBase
     public PrestamosController(IPrestamoService service) => _service = service;
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Prestamo>>> Get()
-        => Ok(await _service.GetAllAsync());
+    public async Task<ActionResult<PagedResult<PrestamoDto>>> Get([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        => Ok(await _service.GetAllAsync(pageNumber, pageSize));
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Prestamo>> Get(int id)
+    public async Task<ActionResult<PrestamoDto>> Get(int id)
         => Ok(await _service.GetByIdAsync(id));
 
     [HttpPost]
-    public async Task<ActionResult<Prestamo>> Post(PrestamoCreateDto dto)
+    public async Task<ActionResult<PrestamoDto>> Post(PrestamoCreateDto dto)
     {
         var prestamo = await _service.CreateAsync(dto);
         return CreatedAtAction(nameof(Get), new { id = prestamo.Id }, prestamo);

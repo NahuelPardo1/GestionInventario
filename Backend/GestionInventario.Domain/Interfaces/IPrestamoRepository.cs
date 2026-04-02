@@ -4,7 +4,7 @@ namespace GestionInventario.Domain.Interfaces;
 
 public interface IPrestamoRepository
 {
-    Task<IEnumerable<Prestamo>> GetAllAsync();
+    Task<(IEnumerable<Prestamo> Items, int TotalCount)> GetAllAsync(int skip, int take);
     Task<Prestamo?> GetByIdAsync(int id);
     Task<bool> HasActiveLoanAsync(int clienteId, int libroId);
     Task AddAsync(Prestamo prestamo);

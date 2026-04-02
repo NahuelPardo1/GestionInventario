@@ -25,6 +25,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<LibroCreateDtoValidator>();
 
+// Configurar AutoMapper
+builder.Services.AddAutoMapper(cfg =>
+{
+    cfg.AddProfile<GestionInventario.Application.Mappings.MappingProfile>();
+});
+
 builder.Services.AddControllers(options =>
     {
         var policy = new AuthorizationPolicyBuilder()

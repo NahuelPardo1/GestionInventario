@@ -5,6 +5,7 @@ using GestionInventario.Domain.Exceptions;
 using GestionInventario.Application.Interfaces;
 using GestionInventario.Application.DTOs;
 using GestionInventario.Domain.Enums;
+using AutoMapper;
 
 namespace GestionInventario.Application.Services;
 
@@ -13,25 +14,37 @@ public class VentaService : IVentaService
     private readonly IVentaRepository _repository;
     private readonly IStockService _stockService;
     private readonly IValidator<VentaCreateDto> _validator;
+    private readonly IMapper _mapper;
 
-    public VentaService(IVentaRepository repository, IStockService stockService, IValidator<VentaCreateDto> validator)
+    public VentaService(IVentaRepository repository, IStockService stockService, IValidator<VentaCreateDto> validator, IMapper mapper)
     {
         _repository = repository;
         _stockService = stockService;
         _validator = validator;
+        _mapper = mapper;
     }
 
-    public async Task<IEnumerable<Venta>> GetAllAsync() =>
-        await _repository.GetAllAsync();
+    public async Task<PagedResult<VentaDto>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+    {
+        int skip = (pageNumber - 1) * pageSize;
+        var (items, totalCount) = await _repository.GetAllAsync(skip, pageSize);
+        return new PagedResult<VentaDto>
+        {
+            Items = _mapper.Map<IEnumerable<VentaDto>>(items),
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
 
-    public async Task<Venta> GetByIdAsync(int id)
+    public async Task<VentaDto> GetByIdAsync(int id)
     {
         var venta = await _repository.GetByIdAsync(id);
         if (venta == null) throw new NotFoundException($"La venta con ID {id} no fue encontrada.");
-        return venta;
+        return _mapper.Map<VentaDto>(venta);
     }
 
-    public async Task<Venta> CreateAsync(VentaCreateDto dto)
+    public async Task<VentaDto> CreateAsync(VentaCreateDto dto)
     {
         await ValidarAsync(dto);
 
@@ -66,7 +79,7 @@ public class VentaService : IVentaService
             Fecha = DateTime.Now
         });
 
-        return venta;
+        return _mapper.Map<VentaDto>(venta);
     }
 
     public async Task UpdateAsync(int id, VentaCreateDto dto)

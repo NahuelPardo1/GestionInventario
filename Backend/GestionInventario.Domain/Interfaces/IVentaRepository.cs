@@ -4,7 +4,7 @@ namespace GestionInventario.Domain.Interfaces;
 
 public interface IVentaRepository
 {
-    Task<IEnumerable<Venta>> GetAllAsync();
+    Task<(IEnumerable<Venta> Items, int TotalCount)> GetAllAsync(int skip, int take);
     Task<Venta?> GetByIdAsync(int id);
     Task AddAsync(Venta venta);
     Task UpdateAsync(Venta venta);

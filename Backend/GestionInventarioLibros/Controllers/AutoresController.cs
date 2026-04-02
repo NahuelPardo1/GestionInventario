@@ -13,15 +13,15 @@ public class AutoresController : ControllerBase
     public AutoresController(IAutorService service) => _service = service;
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Autor>>> Get()
+    public async Task<ActionResult<IEnumerable<AutorDto>>> Get()
         => Ok(await _service.GetAllAsync());
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Autor>> Get(int id)
+    public async Task<ActionResult<AutorDto>> Get(int id)
         => Ok(await _service.GetByIdAsync(id));
 
     [HttpPost]
-    public async Task<ActionResult<Autor>> Post(AutorCreateDto dto)
+    public async Task<ActionResult<AutorDto>> Post(AutorCreateDto dto)
     {
         var autor = await _service.CreateAsync(dto);
         return CreatedAtAction(nameof(Get), new { id = autor.Id }, autor);

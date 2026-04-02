@@ -4,6 +4,7 @@ using GestionInventario.Domain.Interfaces;
 using GestionInventario.Domain.Exceptions;
 using GestionInventario.Application.Interfaces;
 using GestionInventario.Application.DTOs;
+using AutoMapper;
 
 namespace GestionInventario.Application.Services;
 
@@ -11,24 +12,36 @@ public class ClienteService : IClienteService
 {
     private readonly IClienteRepository _repository;
     private readonly IValidator<ClienteCreateDto> _validator;
+    private readonly IMapper _mapper;
 
-    public ClienteService(IClienteRepository repository, IValidator<ClienteCreateDto> validator)
+    public ClienteService(IClienteRepository repository, IValidator<ClienteCreateDto> validator, IMapper mapper)
     {
         _repository = repository;
         _validator = validator;
+        _mapper = mapper;
     }
 
-    public async Task<IEnumerable<Cliente>> GetAllAsync() =>
-        await _repository.GetAllAsync();
+    public async Task<PagedResult<ClienteDto>> GetAllAsync(int pageNumber = 1, int pageSize = 10)
+    {
+        int skip = (pageNumber - 1) * pageSize;
+        var (items, totalCount) = await _repository.GetAllAsync(skip, pageSize);
+        return new PagedResult<ClienteDto>
+        {
+            Items = _mapper.Map<IEnumerable<ClienteDto>>(items),
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
 
-    public async Task<Cliente> GetByIdAsync(int id)
+    public async Task<ClienteDto> GetByIdAsync(int id)
     {
         var cliente = await _repository.GetByIdAsync(id);
         if (cliente == null) throw new NotFoundException($"El cliente con ID {id} no fue encontrado.");
-        return cliente;
+        return _mapper.Map<ClienteDto>(cliente);
     }
 
-    public async Task<Cliente> CreateAsync(ClienteCreateDto dto)
+    public async Task<ClienteDto> CreateAsync(ClienteCreateDto dto)
     {
         await ValidarAsync(dto);
         var cliente = new Cliente
@@ -39,7 +52,7 @@ public class ClienteService : IClienteService
             Direccion = dto.Direccion
         };
         await _repository.AddAsync(cliente);
-        return cliente;
+        return _mapper.Map<ClienteDto>(cliente);
     }
 
     public async Task UpdateAsync(int id, ClienteCreateDto dto)

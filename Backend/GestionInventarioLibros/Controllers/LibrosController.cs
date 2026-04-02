@@ -17,24 +17,26 @@ public class LibrosController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Libro>>> Get()
+    public async Task<ActionResult<PagedResult<LibroDto>>> Get([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
     {
-        var libros = await _libroService.GetAllAsync();
+        var libros = await _libroService.GetAllAsync(pageNumber, pageSize);
         return Ok(libros);
     }
 
     [HttpGet("buscar")]
-    public async Task<ActionResult<IEnumerable<Libro>>> Buscar(
+    public async Task<ActionResult<PagedResult<LibroDto>>> Buscar(
         [FromQuery] string? titulo,
         [FromQuery] int? autorId,
-        [FromQuery] int? categoriaId)
+        [FromQuery] int? categoriaId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
     {
-        var libros = await _libroService.SearchAsync(titulo, autorId, categoriaId);
+        var libros = await _libroService.SearchAsync(titulo, autorId, categoriaId, pageNumber, pageSize);
         return Ok(libros);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Libro>> Get(int id)
+    public async Task<ActionResult<LibroDto>> Get(int id)
     {
         // El Middleware manejará el 404 si el servicio lanza NotFoundException
         var libro = await _libroService.GetByIdAsync(id);
@@ -42,7 +44,7 @@ public class LibrosController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<Libro>> Post(LibroCreateDto libroDto)
+    public async Task<ActionResult<LibroDto>> Post(LibroCreateDto libroDto)
     {
         // El Middleware manejará el 400 si el servicio lanza ValidationException
         var nuevoLibro = await _libroService.CreateAsync(libroDto);
