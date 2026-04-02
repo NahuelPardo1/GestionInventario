@@ -15,6 +15,7 @@ El sistema está desarrollado con el ecosistema de Microsoft, empleando las mejo
 - **Validaciones:** FluentValidation (Validación de reglas de negocio asíncronas)
 - **Documentación de API:** Swagger (OpenAPI)
 - **Manejo de Errores:** Middleware Global de Excepciones (Centralización de respuestas HTTP 400 y 404).
+- **Seguridad:** Autenticación JWT (JSON Web Tokens) y hashing de contraseñas de manera segura usando BCrypt.
 
 ---
 
@@ -38,6 +39,7 @@ El sistema no es un simple CRUD, cuenta con reglas de negocio activas:
 - **📦 Stock Inteligente**: Las ventas y los préstamos se interconectan con el módulo de `Stock`. Al vender (o prestar), el sistema valida si hay disponibilidad y genera un movimiento de `Salida` automático.
 - **🛡️ Préstamos Pro**: Controles estrictos impiden que un cliente se lleve múltiples ejemplares del mismo título en paralelo. Al generar una devolución, el sistema automáticamente reintegra el stock.
 - **🔄 Auto-Recuperación**: Si un usuario (Administrador) fuerza la eliminación de un préstamo o venta activos, el sistema intercepta el borrado y repone los libros al inventario de manera autónoma para prevenir inconsistencias.
+- **🔐 Seguridad Avanzada (RBAC)**: Todo el sistema está fortificado mediante autenticación basada en tokens JWT. Las contraseñas de los usuarios están fuertemente encriptadas (`BCrypt.Net-Next`) y las rutas de los recursos exigen validación de Roles (`Administrador` / `Vendedor`).
 
 ---
 
@@ -69,6 +71,6 @@ Sigue estos pasos para arrancar el backend en tu entorno de desarrollo Windows:
 
 El desarrollo del proyecto es continuo. Los próximos niveles de madurez planificados son:
 
-- **Nivel 3 (Seguridad):** Implementación de Login, encriptación de claves con BCrypt, y protección de Endpoints con JSON Web Tokens (JWT). Creación de Roles (Administrador / Vendedor).
+- ~~**Nivel 3 (Seguridad):** Implementación de Login, encriptación de claves con BCrypt, y protección de Endpoints con JSON Web Tokens (JWT). Creación de Roles (Administrador / Vendedor).~~ *(COMPLETADO)*
 - **Nivel 4 (Optimización):** Implementación de Paginación en listas largas (con `Take()` y `Skip()`) y uso de `AutoMapper` para agilizar las conversiones DTO ↔ Entidad.
 - **Nivel 5 (DevOps):** Creación de entornos Docker (Docker Compose para levantar API + SQL Server en modo contenedor) e integración de pruebas unitarias (Unit Testing con xUnit).

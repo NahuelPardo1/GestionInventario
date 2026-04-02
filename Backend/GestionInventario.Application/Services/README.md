@@ -12,3 +12,4 @@ Esta es la capa donde vive la **Inteligencia del Sistema**. Aquí implementamos 
 2. Validar reglas de dominio.
 3. Ejecutar lógica persistente mediante Repositorios.
 4. (Opcional) Guardar auditoría o logs.
+5. (Auth) Administrar login, encriptado con BCrypt y tokens JWT a través de `AuthService`.

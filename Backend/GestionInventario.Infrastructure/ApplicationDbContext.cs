@@ -16,4 +16,5 @@ public class ApplicationDbContext : DbContext
     public DbSet<Venta> Ventas { get; set; } = null!;
     public DbSet<Stock> Stocks { get; set; } = null!;
     public DbSet<Prestamo> Prestamos { get; set; } = null!;
+    public DbSet<Usuario> Usuarios { get; set; } = null!;
 }

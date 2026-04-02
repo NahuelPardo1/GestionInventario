@@ -14,3 +14,4 @@ Son representaciones directas de las tablas en la base de datos (mapeadas por EF
 - `Libro`, `Autor`, `Categoria`: El núcleo del catálogo.
 - `Cliente`, `Venta`, `Prestamo`: El núcleo de la operación comercial.
 - `Stock`: El registro de movimientos de inventario.
+- `Usuario`, `RolUsuario`: Entidades responsables de la administración de Identidades y Autenticación JWT.

@@ -9,8 +9,10 @@ Los controladores son el "puente" entre el protocolo HTTP (Requests/Responses) y
 1. **Thin Controllers**: No deben tener lógica de negocio. Solo reciben datos, llaman al servicio correspondiente e informan el resultado.
 2. **Uso de DTOs**: Siempre deben recibir y devolver DTOs, nunca entidades de dominio directamente.
 3. **Códigos de Estado**: Deben usar códigos HTTP semánticos (`200 OK`, `201 Created`, `204 NoContent`, `400 BadRequest`, `404 NotFound`).
+4. **Seguridad JWT**: Todos nuestros endpoints asumen el filtro `[Authorize]` global. Para abrir un recurso sin token, se aplica explícitamente `[AllowAnonymous]`.
 
 ## Controladores Implementados:
+- `AuthController`: Registro y generación de tokens JWT de sesión.
 - `LibrosController`: Catálogo y búsquedas avanzadas.
 - `CategoriasController`, `AutoresController`: Maestros de catálogo.
 - `ClientesController`: Gestión de usuarios del sistema.
