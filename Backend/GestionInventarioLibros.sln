@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36414.22
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GestionInventario.Application", "GestionInventario.Application\GestionInventario.Application.csproj", "{24BA3150-5D41-432B-A863-E24B36EEA157}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GestionInventario.Infrastructure", "GestionInventario.Infrastructure\GestionInventario.Infrastructure.csproj", "{1A7E1559-6B3E-470D-AAB6-4DA76F8C9DB4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GestionInventario.Tests", "GestionInventario.Tests\GestionInventario.Tests.csproj", "{3FF6C6B9-3BDA-4C26-9AA5-A9120187BE5B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,6 +73,18 @@ Global
 		{1A7E1559-6B3E-470D-AAB6-4DA76F8C9DB4}.Release|x64.Build.0 = Release|Any CPU
 		{1A7E1559-6B3E-470D-AAB6-4DA76F8C9DB4}.Release|x86.ActiveCfg = Release|Any CPU
 		{1A7E1559-6B3E-470D-AAB6-4DA76F8C9DB4}.Release|x86.Build.0 = Release|Any CPU
+		{3FF6C6B9-3BDA-4C26-9AA5-A9120187BE5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FF6C6B9-3BDA-4C26-9AA5-A9120187BE5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FF6C6B9-3BDA-4C26-9AA5-A9120187BE5B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3FF6C6B9-3BDA-4C26-9AA5-A9120187BE5B}.Debug|x64.Build.0 = Debug|Any CPU
+		{3FF6C6B9-3BDA-4C26-9AA5-A9120187BE5B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3FF6C6B9-3BDA-4C26-9AA5-A9120187BE5B}.Debug|x86.Build.0 = Debug|Any CPU
+		{3FF6C6B9-3BDA-4C26-9AA5-A9120187BE5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FF6C6B9-3BDA-4C26-9AA5-A9120187BE5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FF6C6B9-3BDA-4C26-9AA5-A9120187BE5B}.Release|x64.ActiveCfg = Release|Any CPU
+		{3FF6C6B9-3BDA-4C26-9AA5-A9120187BE5B}.Release|x64.Build.0 = Release|Any CPU
+		{3FF6C6B9-3BDA-4C26-9AA5-A9120187BE5B}.Release|x86.ActiveCfg = Release|Any CPU
+		{3FF6C6B9-3BDA-4C26-9AA5-A9120187BE5B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

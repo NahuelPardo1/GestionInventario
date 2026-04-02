@@ -16,6 +16,8 @@ El sistema está desarrollado con el ecosistema de Microsoft, empleando las mejo
 - **Documentación de API:** Swagger (OpenAPI)
 - **Manejo de Errores:** Middleware Global de Excepciones (Centralización de respuestas HTTP 400 y 404).
 - **Seguridad:** Autenticación JWT (JSON Web Tokens) y hashing de contraseñas de manera segura usando BCrypt.
+- **Testing:** xUnit, Moq, y FluentAssertions para pruebas unitarias de la lógica de negocio.
+- **DevOps & CI/CD:** Docker y Docker Compose para contenedorización; GitHub Actions para Integración Continua (Continuous Integration).
 
 ---
 
@@ -41,6 +43,8 @@ El sistema no es un simple CRUD, cuenta con reglas de negocio activas:
 - **🔄 Auto-Recuperación**: Si un usuario (Administrador) fuerza la eliminación de un préstamo o venta activos, el sistema intercepta el borrado y repone los libros al inventario de manera autónoma para prevenir inconsistencias.
 - **🔐 Seguridad Avanzada (RBAC)**: Todo el sistema está fortificado mediante autenticación basada en tokens JWT. Las contraseñas de los usuarios están fuertemente encriptadas (`BCrypt.Net-Next`) y las rutas de los recursos exigen validación de Roles (`Administrador` / `Vendedor`).
 - **🚀 Optimización y Rendimiento (Nivel 4)**: Implementación de **Paginación** desde la base de datos (con `Skip()` y `Take()` de EF Core) para controlar grandes flujos de datos. Uso de **AutoMapper** para transiciones veloces entre las Entidades de la Base de Datos y los `DTOs` limpios que se envían por la Web API.
+- **🛡️ Alta Fiabilidad**: Cobertura exhaustiva de pruebas unitarias (`xUnit`, `Moq`) sobre la lógica central de negocio (ventas, stock, validaciones y autenticación) para prevenir regresiones.
+- **🐳 DevOps y CI/CD**: Contenedorización completa con **Docker**, orquestando la Web API y SQL Server. Pipeline de **Integración Continua (CI)** con GitHub Actions que compila y ejecuta todas las pruebas automáticamente en cada "push".
 
 ---
 
@@ -68,10 +72,34 @@ Sigue estos pasos para arrancar el backend en tu entorno de desarrollo Windows:
 
 ---
 
-## 🛣️ Futuras Implementaciones (Roadmap)
+## 🐳 Cómo hacer arrancar el proyecto con Docker
 
-El desarrollo del proyecto es continuo. Los próximos niveles de madurez planificados son:
+Si no quieres configurar SQL Server localmente, puedes levantar todo el entorno con un solo comando gracias a Docker Compose:
 
-- ~~**Nivel 3 (Seguridad):** Implementación de Login, encriptación de claves con BCrypt, y protección de Endpoints con JSON Web Tokens (JWT). Creación de Roles (Administrador / Vendedor).~~ *(COMPLETADO)*
-- ~~**Nivel 4 (Optimización):** Implementación de Paginación en listas largas (con `Take()` y `Skip()`) y uso de `AutoMapper` para agilizar las conversiones DTO ↔ Entidad.~~ *(COMPLETADO)*
-- **Nivel 5 (DevOps):** Creación de entornos Docker (Docker Compose para levantar API + SQL Server en modo contenedor) e integración de pruebas unitarias (Unit Testing con xUnit).
+### Requisitos previos:
+- **Docker Desktop** instalado y en ejecución.
+
+### Pasos:
+1. Abre una terminal en la raíz del proyecto (donde se encuentra `docker-compose.yml`).
+2. Ejecuta el comando para construir y levantar los contenedores:
+   ```bash
+   docker compose up --build
+   ```
+3. Una vez que los contenedores estén corriendo, abre otra terminal y aplica las migraciones a la base de datos de Docker:
+   ```bash
+   dotnet ef database update --project Backend/GestionInventario.Infrastructure --startup-project Backend/GestionInventarioLibros
+   ```
+4. Navega a la API interactiva: `http://localhost:8080/swagger`.
+
+---
+
+## 🧪 Pruebas Unitarias (Testing)
+
+El proyecto cuenta con un conjunto de pruebas unitarias para blindar la lógica de negocio. Para ejecutarlas localmente:
+
+1. Abre una terminal en la raíz del proyecto.
+2. Ejecuta el siguiente comando:
+   ```bash
+   dotnet test Backend/GestionInventarioLibros.sln
+   ```
+El pipeline de integración continua (CI) en GitHub Actions se asegura de que estas pruebas pasen automáticamente en cada subida de código.

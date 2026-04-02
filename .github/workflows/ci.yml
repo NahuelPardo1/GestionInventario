@@ -1,0 +1,38 @@
+name: CI (Build and Test)
+
+on:
+  push:
+    branches: [ "main", "master" ] # Se dispara al subir código a estas ramas
+  pull_request:
+    branches: [ "main", "master" ] # Se dispara al abrir un PR a estas ramas
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4 # Baja tu código al servidor de GitHub
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore Backend/GestionInventarioLibros.sln
+
+    - name: Build
+      run: dotnet build Backend/GestionInventarioLibros.sln --no-restore
+
+    - name: Test
+      run: dotnet test Backend/GestionInventarioLibros.sln --no-build --verbosity normal
+
+  docker-build-check:
+    runs-on: ubuntu-latest
+    needs: build-and-test # Este paso solo corre si los tests pasaron
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Docker Build Check
+      run: docker build -t inventory-api:latest -f Backend/GestionInventarioLibros/Dockerfile Backend/
