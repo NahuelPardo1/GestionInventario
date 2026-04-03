@@ -28,16 +28,25 @@ bld/
 
 # Visual Studio 2015/2017/2019/2022 cache/options directory
 .vs/
-# Uncomment if you use Visual Studio Code
 .vscode/
 
 # Node caches and modules
 node_modules/
 dist/
 .npm/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Angular-specific
 .angular/
+.editorconfig
+.prettierrc
+
+# Environment variables
+.env
+.env.local
+.env.*.local
 
 # Entity Framework Core
 *.db
