@@ -1,7 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LibroFormComponent } from '../libro-form/libro-form.component';
+import { LibroService } from '../../../core/services/libro.service';
+import { AutorService, CategoriaService } from '../../../core/services/catalogo.service';
+import { LibroDto, LibroCreateDto, AutorDto, CategoriaDto } from '../../../core/models/libro.interfaces';
 
 @Component({
   selector: 'app-inventario',
@@ -26,7 +29,7 @@ import { LibroFormComponent } from '../libro-form/libro-form.component';
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <input type="text" [(ngModel)]="searchTerm" placeholder="Buscar libro..." class="input-premium pl-10 w-full text-sm">
+            <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="onSearch()" placeholder="Buscar por título..." class="input-premium pl-10 w-full text-sm">
           </div>
           
           <button (click)="openAddModal()" class="btn-primary flex items-center justify-center gap-2 whitespace-nowrap">
@@ -38,39 +41,46 @@ import { LibroFormComponent } from '../libro-form/libro-form.component';
         </div>
       </div>
 
+      <!-- Notification toast -->
+      <div *ngIf="notification" class="p-3 rounded-lg text-sm text-center animate-fade-in"
+           [ngClass]="notification.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border border-rose-500/20 text-rose-400'">
+        {{ notification.message }}
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="flex-1 flex items-center justify-center">
+        <div class="text-slate-400 animate-pulse text-lg">Cargando inventario...</div>
+      </div>
+
       <!-- Data Table -->
-      <div class="glass-panel rounded-2xl flex-1 border border-white/5 overflow-hidden flex flex-col">
+      <div *ngIf="!loading" class="glass-panel rounded-2xl flex-1 border border-white/5 overflow-hidden flex flex-col">
         <div class="overflow-x-auto">
           <table class="w-full text-left text-sm text-slate-300">
             <thead class="text-xs uppercase bg-white/5 border-b border-white/10 text-slate-400">
               <tr>
                 <th scope="col" class="px-6 py-4 font-semibold">Libro</th>
-                <th scope="col" class="px-6 py-4 font-semibold">ISBN</th>
+                <th scope="col" class="px-6 py-4 font-semibold">Autor</th>
                 <th scope="col" class="px-6 py-4 font-semibold">Categoría</th>
                 <th scope="col" class="px-6 py-4 font-semibold text-right">Precio</th>
-                <th scope="col" class="px-6 py-4 font-semibold text-center">Stock</th>
                 <th scope="col" class="px-6 py-4 font-semibold text-center">Acciones</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-white/5">
-              <!-- Placeholder Data -->
-              <tr *ngFor="let libro of filteredLibros()" class="hover:bg-white/5 transition-colors group">
+              <tr *ngIf="libros.length === 0">
+                <td colspan="5" class="px-6 py-10 text-center text-slate-500">No se encontraron libros.</td>
+              </tr>
+              <tr *ngFor="let libro of libros" class="hover:bg-white/5 transition-colors group">
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="font-medium text-white">{{ libro.titulo }}</div>
-                  <div class="text-xs text-slate-500">{{ libro.autor }}</div>
+                  <div class="text-xs text-slate-500">ID: {{ libro.id }}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap font-mono text-xs">{{ libro.isbn }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">{{ getAutorNombre(libro.autorId) }}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                    {{ libro.genero }}
+                    {{ getCategoriaNombre(libro.categoriaId) }}
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right font-medium text-white">\${{ libro.precio }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-center">
-                  <span [class]="getStockClass(libro.stock)" class="inline-flex items-center px-2 py-1 rounded text-xs font-semibold">
-                    {{ libro.stock }} uds
-                  </span>
-                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right font-medium text-white">\${{ libro.precio | number:'1.2-2' }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-center">
                   <div class="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <!-- Edit Button -->
@@ -91,55 +101,124 @@ import { LibroFormComponent } from '../libro-form/libro-form.component';
             </tbody>
           </table>
         </div>
+
+        <!-- Pagination -->
+        <div *ngIf="totalPages > 1" class="flex items-center justify-between px-6 py-4 border-t border-white/5">
+          <span class="text-sm text-slate-400">Página {{ currentPage }} de {{ totalPages }} ({{ totalCount }} libros)</span>
+          <div class="flex gap-2">
+            <button (click)="changePage(currentPage - 1)" [disabled]="currentPage <= 1" class="btn-secondary text-sm px-3 py-1.5">← Anterior</button>
+            <button (click)="changePage(currentPage + 1)" [disabled]="currentPage >= totalPages" class="btn-secondary text-sm px-3 py-1.5">Siguiente →</button>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- The overlay component -->
     <app-libro-form 
       [isOpen]="showModal" 
-      [isEdit]="isEditMode" 
-      [libro]="currentLibro"
+      [isEdit]="isEditMode"
+      [libroId]="editingLibroId"
+      [libroData]="currentLibroData"
       (closeEvent)="closeModal()"
       (saveEvent)="handleSave($event)">
     </app-libro-form>
   `
 })
-export class InventarioComponent {
-  searchTerm: string = '';
-  showModal: boolean = false;
-  isEditMode: boolean = false;
-  currentLibro: any = {};
+export class InventarioComponent implements OnInit {
+  @ViewChild(LibroFormComponent) formComponent!: LibroFormComponent;
 
-  libros = [
-    { id: 1, titulo: 'El Color de la Magia', autor: 'Terry Pratchett', isbn: '978-84-01-38100-3', precio: 15.99, stock: 42, genero: 'Fantasía' },
-    { id: 2, titulo: 'Clean Code', autor: 'Robert C. Martin', isbn: '978-0-13-235088-4', precio: 45.00, stock: 5, genero: 'Ciencia' },
-    { id: 3, titulo: '1984', autor: 'George Orwell', isbn: '978-0-452-28423-4', precio: 12.50, stock: 0, genero: 'Ficción' },
-  ];
+  private libroService = inject(LibroService);
+  private autorService = inject(AutorService);
+  private categoriaService = inject(CategoriaService);
 
-  filteredLibros() {
-    if (!this.searchTerm) return this.libros;
-    return this.libros.filter(l => 
-      l.titulo.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-      l.autor.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-      l.isbn.includes(this.searchTerm)
-    );
+  searchTerm = '';
+  showModal = false;
+  isEditMode = false;
+  editingLibroId: number | null = null;
+  currentLibroData: LibroCreateDto | null = null;
+  loading = true;
+  notification: { message: string; type: 'success' | 'error' } | null = null;
+
+  libros: LibroDto[] = [];
+  autores: AutorDto[] = [];
+  categorias: CategoriaDto[] = [];
+
+  currentPage = 1;
+  pageSize = 10;
+  totalCount = 0;
+  totalPages = 0;
+
+  private searchTimeout: any;
+
+  ngOnInit() {
+    this.loadCatalogs();
+    this.loadLibros();
   }
 
-  getStockClass(stock: number): string {
-    if (stock > 10) return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-    if (stock > 0) return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
-    return 'bg-rose-500/10 text-rose-400 border border-rose-500/20';
+  loadCatalogs() {
+    this.autorService.getAll().subscribe(data => this.autores = data);
+    this.categoriaService.getAll().subscribe(data => this.categorias = data);
+  }
+
+  loadLibros() {
+    this.loading = true;
+    const obs = this.searchTerm
+      ? this.libroService.search(this.searchTerm, undefined, undefined, this.currentPage, this.pageSize)
+      : this.libroService.getAll(this.currentPage, this.pageSize);
+
+    obs.subscribe({
+      next: (result) => {
+        this.libros = result.items;
+        this.totalCount = result.totalCount;
+        this.totalPages = result.totalPages;
+        this.loading = false;
+      },
+      error: () => {
+        this.showNotification('Error al cargar los libros.', 'error');
+        this.loading = false;
+      }
+    });
+  }
+
+  onSearch() {
+    clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+      this.currentPage = 1;
+      this.loadLibros();
+    }, 400);
+  }
+
+  changePage(page: number) {
+    this.currentPage = page;
+    this.loadLibros();
+  }
+
+  getAutorNombre(autorId: number): string {
+    return this.autores.find(a => a.id === autorId)?.nombre || `Autor #${autorId}`;
+  }
+
+  getCategoriaNombre(categoriaId: number): string {
+    return this.categorias.find(c => c.id === categoriaId)?.nombre || 'Sin categoría';
   }
 
   openAddModal() {
     this.isEditMode = false;
-    this.currentLibro = { titulo: '', autor: '', isbn: '', precio: 0, stock: 0, genero: '' };
+    this.editingLibroId = null;
+    this.currentLibroData = null;
     this.showModal = true;
   }
 
-  openEditModal(libro: any) {
+  openEditModal(libro: LibroDto) {
     this.isEditMode = true;
-    this.currentLibro = { ...libro };
+    this.editingLibroId = libro.id;
+    this.currentLibroData = {
+      titulo: libro.titulo,
+      autorId: libro.autorId,
+      precio: libro.precio,
+      fechaPublicacion: libro.fechaPublicacion,
+      imagenURL: libro.imagenURL,
+      categoriaId: libro.categoriaId
+    };
     this.showModal = true;
   }
 
@@ -147,19 +226,52 @@ export class InventarioComponent {
     this.showModal = false;
   }
 
-  handleSave(libro: any) {
-    if (this.isEditMode) {
-      const index = this.libros.findIndex(l => l.id === libro.id);
-      if (index !== -1) this.libros[index] = libro;
+  handleSave(data: LibroCreateDto) {
+    if (this.isEditMode && this.editingLibroId) {
+      this.libroService.update(this.editingLibroId, data).subscribe({
+        next: () => {
+          this.showNotification('Libro actualizado correctamente.', 'success');
+          this.closeModal();
+          this.formComponent?.resetSaving();
+          this.loadLibros();
+        },
+        error: (err) => {
+          this.formComponent?.resetSaving();
+          this.showNotification(err.error?.message || err.error?.Message || 'Error al actualizar.', 'error');
+        }
+      });
     } else {
-      libro.id = Math.random();
-      this.libros.push(libro);
+      this.libroService.create(data).subscribe({
+        next: () => {
+          this.showNotification('Libro creado correctamente.', 'success');
+          this.closeModal();
+          this.formComponent?.resetSaving();
+          this.loadLibros();
+        },
+        error: (err) => {
+          this.formComponent?.resetSaving();
+          this.showNotification(err.error?.message || err.error?.Message || 'Error al crear el libro.', 'error');
+        }
+      });
     }
   }
 
-  deleteLibro(libro: any) {
-    if(confirm(`¿Estás seguro de eliminar "${libro.titulo}"?`)) {
-      this.libros = this.libros.filter(l => l.id !== libro.id);
+  deleteLibro(libro: LibroDto) {
+    if (confirm(`¿Estás seguro de eliminar "${libro.titulo}"?`)) {
+      this.libroService.delete(libro.id).subscribe({
+        next: () => {
+          this.showNotification('Libro eliminado correctamente.', 'success');
+          this.loadLibros();
+        },
+        error: (err) => {
+          this.showNotification(err.error?.message || err.error?.Message || 'Error al eliminar.', 'error');
+        }
+      });
     }
+  }
+
+  private showNotification(message: string, type: 'success' | 'error') {
+    this.notification = { message, type };
+    setTimeout(() => this.notification = null, 4000);
   }
 }

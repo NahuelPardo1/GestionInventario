@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../core/services/AuthService';
 
 @Component({
   selector: 'app-login',
@@ -33,42 +34,44 @@ import { FormsModule } from '@angular/forms';
         <form class="space-y-6" (submit)="onLogin($event)">
           <div class="space-y-2">
             <label class="text-sm font-medium text-slate-300 ml-1">Correo electrónico</label>
-            <input type="email" name="email" [(ngModel)]="email" class="input-premium" placeholder="admin@bookcrm.com" required>
+            <input type="email" name="email" [(ngModel)]="email" class="input-premium" placeholder="admin&#64;bookcrm.com" required>
           </div>
           
           <div class="space-y-2 flex flex-col">
             <label class="text-sm font-medium text-slate-300 ml-1">Contraseña</label>
             <input type="password" name="password" [(ngModel)]="password" class="input-premium" placeholder="••••••••" required>
-            <a href="#" class="text-xs text-indigo-400 self-end mt-2 hover:text-indigo-300 transition-colors">¿Olvidaste tu contraseña?</a>
           </div>
 
-          <button type="submit" class="btn-primary w-full mt-4">
-            Ingresar al sistema
+          <button type="submit" class="btn-primary w-full mt-4" [disabled]="loading">
+            {{ loading ? 'Ingresando...' : 'Ingresar al sistema' }}
           </button>
-
-          <div class="text-center mt-4">
-             <p class="text-xs text-slate-500">Credenciales: <strong class="text-slate-400">admin&#64;bookcrm.com / admin123</strong></p>
-          </div>
         </form>
       </div>
     </div>
   `
 })
 export class LoginComponent {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   email = '';
   password = '';
   errorMessage = '';
-
-  constructor(private router: Router) {}
+  loading = false;
 
   onLogin(event: Event) {
     event.preventDefault();
-    this.errorMessage = ''; // Resetea error
+    this.errorMessage = '';
+    this.loading = true;
 
-    if (this.email === 'admin@bookcrm.com' && this.password === 'admin123') {
-      this.router.navigate(['/dashboard/inventario']);
-    } else {
-      this.errorMessage = 'Credenciales incorrectas. Intenta de nuevo.';
-    }
+    this.authService.login({ email: this.email, password: this.password }).subscribe({
+      next: () => {
+        this.router.navigate(['/dashboard/inventario']);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.errorMessage = err.error?.message || err.error?.Message || 'Credenciales incorrectas. Intenta de nuevo.';
+      }
+    });
   }
 }
