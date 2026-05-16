@@ -48,7 +48,7 @@ public class LibrosController : ControllerBase
     {
         // El Middleware manejará el 400 si el servicio lanza ValidationException
         var nuevoLibro = await _libroService.CreateAsync(libroDto);
-        return CreatedAtAction(nameof(Get), new { id = nuevoLibro.Id }, nuevoLibro);
+        return Ok(nuevoLibro);
     }
 
     [HttpPut("{id}")]

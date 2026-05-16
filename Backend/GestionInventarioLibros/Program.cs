@@ -46,6 +46,19 @@ builder.Services.AddControllers(options =>
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:4200", "http://127.0.0.1:4200", 
+                               "http://localhost:5173", "http://localhost:5174",
+                               "http://127.0.0.1:5173", "http://127.0.0.1:5174")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
+
 var key = builder.Configuration["JwtSettings:Secret"];
 if (string.IsNullOrEmpty(key)) throw new Exception("JWT Secret no configurado");
 
@@ -125,7 +138,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// NOTA: No usar UseHttpsRedirection() en Docker.
+// HTTPS se maneja a nivel del reverse proxy (Nginx, etc.), no de la app.
+// app.UseHttpsRedirection();
+
+app.UseCors("AllowFrontend");
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

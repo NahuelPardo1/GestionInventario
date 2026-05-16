@@ -24,7 +24,7 @@ public class CategoriasController : ControllerBase
     public async Task<ActionResult<CategoriaDto>> Post(CategoriaCreateDto dto)
     {
         var categoria = await _service.CreateAsync(dto);
-        return CreatedAtAction(nameof(Get), new { id = categoria.Id }, categoria);
+        return Ok(categoria);
     }
 
     [HttpPut("{id}")]

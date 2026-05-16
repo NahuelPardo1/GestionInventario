@@ -24,7 +24,7 @@ public class ClientesController : ControllerBase
     public async Task<ActionResult<ClienteDto>> Post(ClienteCreateDto dto)
     {
         var cliente = await _service.CreateAsync(dto);
-        return CreatedAtAction(nameof(Get), new { id = cliente.Id }, cliente);
+        return Ok(cliente);
     }
 
     [HttpPut("{id}")]

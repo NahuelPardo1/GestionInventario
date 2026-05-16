@@ -36,6 +36,7 @@ public class AutorService : IAutorService
 
     public async Task<AutorDto> CreateAsync(AutorCreateDto dto)
     {
+        Console.WriteLine("--> Entrando a ValidarAsync");
         await ValidarAsync(dto);
         var autor = new Autor
         {
@@ -44,8 +45,13 @@ public class AutorService : IAutorService
             FechaNacimiento = dto.FechaNacimiento,
             Biografia = dto.Biografia
         };
+        Console.WriteLine("--> Llamando a _repository.AddAsync");
         await _repository.AddAsync(autor);
-        return _mapper.Map<AutorDto>(autor);
+        Console.WriteLine("--> Finalizó AddAsync. Id=" + autor.Id);
+        Console.WriteLine("--> Llamando a AutoMapper");
+        var dtoResult = _mapper.Map<AutorDto>(autor);
+        Console.WriteLine("--> Retornando DTO");
+        return dtoResult;
     }
 
     public async Task UpdateAsync(int id, AutorCreateDto dto)

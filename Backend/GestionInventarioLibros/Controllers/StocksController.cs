@@ -28,7 +28,7 @@ public class StocksController : ControllerBase
     public async Task<ActionResult<StockDto>> Post(StockCreateDto dto)
     {
         var stock = await _service.CreateAsync(dto);
-        return CreatedAtAction(nameof(Get), new { id = stock.Id }, stock);
+        return Ok(stock);
     }
 
     [HttpPut("{id}")]

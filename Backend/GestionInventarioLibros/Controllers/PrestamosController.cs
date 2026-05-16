@@ -24,7 +24,7 @@ public class PrestamosController : ControllerBase
     public async Task<ActionResult<PrestamoDto>> Post(PrestamoCreateDto dto)
     {
         var prestamo = await _service.CreateAsync(dto);
-        return CreatedAtAction(nameof(Get), new { id = prestamo.Id }, prestamo);
+        return Ok(prestamo);
     }
 
     [HttpPut("{id}")]

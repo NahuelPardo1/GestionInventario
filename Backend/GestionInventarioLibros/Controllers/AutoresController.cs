@@ -23,8 +23,10 @@ public class AutoresController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<AutorDto>> Post(AutorCreateDto dto)
     {
+        Console.WriteLine("--> Entrando a Controller.Post");
         var autor = await _service.CreateAsync(dto);
-        return CreatedAtAction(nameof(Get), new { id = autor.Id }, autor);
+        Console.WriteLine("--> Saliendo de Controller.Post. Retornando Ok.");
+        return Ok(autor);
     }
 
     [HttpPut("{id}")]
